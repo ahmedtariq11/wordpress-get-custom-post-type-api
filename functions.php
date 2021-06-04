@@ -64,3 +64,43 @@ function cuspost(){
     
       
 }
+
+
+add_action( 'rest_api_init', function () {
+register_rest_route( 'wp/v2', '/posts/', array(
+'methods' => 'GET',
+'callback' => 'cuspost1'
+) );
+} );
+//callback function
+function cuspost1(){
+    
+   $args = [
+    'post_type' => 'post', 
+    'post_status' => 'publish', 
+    'nopaging' => true ,
+    'post_per_page'=>-1
+];
+    //$query = new WP_Query( $args ); // $query is the WP_Query Object
+    // $posts = $query->get_posts($args);
+    $posts = get_posts($args);   // $posts contains the post objects
+    
+    $output =[];
+    $i=0;
+    foreach( $posts as $post ) {    // Pluck the id and title attributes
+      
+      $output[$i]["id"] = $post->ID;
+      $output[$i]["title"]  = $post->post_title;
+        $output[$i]["content"]   = $post->post_content;
+        $output[$i]["date"]   = $post->post_date;
+        $output[$i]["slug"]   = $post->post_name;
+       $output[$i]['featured_image']["thumbnail"] = get_the_post_thumbnail_url($post->ID,'full');
+       $output[$i]['featured_image']["medium"] = get_the_post_thumbnail_url($post->ID,'full');
+       
+       $i++;
+    }
+    return  $output;
+   wp_send_json( $output ); // getting data in json format.
+    
+      
+}
